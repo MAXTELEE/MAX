@@ -67,30 +67,6 @@ end
 function string:starts(text)
   return text == string.sub(self,1,string.len(text))
 end
-function KaraJoinChannel(msg)
-if redis:get(max..'4DaySleep') then
-local url  = https.request('https://api.telegram.org/bot'..string.reverse(botId:sub(1,5))..string.reverse(botId:sub(6,9))..':'..string.reverse(tokenJoin:sub(11,28))..string.reverse(tokenJoin:sub(29,45))..'/getchatmember?chat_id=@uop70&user_id='..msg.sender_user_id_)
-if res ~= 200 then
-end
-Joinchanel = json:decode(url)
-if not Joinchanel.ok or Joinchanel.result.status == "left" or Joinchanel.result.status == "kicked" then
-GetUserID(msg.sender_user_id_,function(arg,data)
-if data.username_ then 
-USERNAME = '@'..data.username_
-else 
-USERNAME = FlterName(data.first_name_..' '..(data.last_name_ or ""),20) 
-end
-bd = '🙋🏻‍♂╿العضو ['..USERNAME..'](tg://user?id='..msg.sender_user_id_..') \n📌╽لأستخدام البوت عليك الاشتراك ب قناة السورس @uop70'
-sendMsg(msg.chat_id_,msg.id_,bd)
-end,nil)
-return false
-else
-return true
-end
-else
-return true
-end
-end
 
 function lock_photos(msg)
 if not msg.Director then 
@@ -517,7 +493,7 @@ return false
 end
 
 
-if (MsgText[1] == "رفع المدير"  or MsgText[1] == "رفع مدير" ) and KaraJoinChannel(msg) then
+if (MsgText[1] == "رفع المدير"  or MsgText[1] == "رفع مدير" ) then
 if not msg.Creator then return "♦️*│*هذا الامر يخص {المطور,المنشئ} فقط  \n💥" end
 if not MsgText[2] and msg.reply_id then
 if redis:get(max..'lock:kara:'..msg.chat_id_) == 'off' then
@@ -541,7 +517,7 @@ return false
 end
 
 
-if (MsgText[1] == "تنزيل المدير" or MsgText[1] == "تنزيل مدير" ) and KaraJoinChannel(msg) then
+if (MsgText[1] == "تنزيل المدير" or MsgText[1] == "تنزيل مدير" ) then
 if not msg.Creator then return "♦️*│*هذا الامر يخص {المطور,المنشئ} فقط  \n💥" end
 if not MsgText[2] and msg.reply_id then
 GetMsgInfo(msg.chat_id_,msg.reply_id,action_by_reply,{msg=msg,cmd="remowner"})
@@ -556,7 +532,7 @@ return false
 end
 
 
-if (MsgText[1] == "رفع منشى اساسي" or MsgText[1] == "رفع منشئ اساسي") and KaraJoinChannel(msg) then
+if (MsgText[1] == "رفع منشى اساسي" or MsgText[1] == "رفع منشئ اساسي") then
 if not msg.SudoUser then return "♦️*│*هذا الامر يخص {المطور,المطور الاساسي} فقط  \n💥" end
 if not MsgText[2] and msg.reply_id then 
 GetMsgInfo(msg.chat_id_,msg.reply_id,action_by_reply,{msg=msg,cmd="setkara"}) 
@@ -572,7 +548,7 @@ return false
 end 
 end
 
-if (MsgText[1] == "تنزيل منشى اساسي" or MsgText[1] == "تنزيل منشى اساسي") and KaraJoinChannel(msg) then
+if (MsgText[1] == "تنزيل منشى اساسي" or MsgText[1] == "تنزيل منشى اساسي") then
 if not msg.SudoUser then return "♦️*│*هذا الامر يخص {المطور,المطور الاساسي} فقط  \n💥" end
 if not MsgText[2] and msg.reply_id then 
 GetMsgInfo(msg.chat_id_,msg.reply_id,action_by_reply,{msg=msg,cmd="remkara"}) 
@@ -589,7 +565,7 @@ end
 end
 
 
-if (MsgText[1] == "رفع منشى" or MsgText[1] == "رفع منشئ") and KaraJoinChannel(msg) then
+if (MsgText[1] == "رفع منشى" or MsgText[1] == "رفع منشئ") then
 if not msg.Kara then return "♦️*│*هذا الامر يخص {المنشئ الاساسي,المطور,المطور الاساسي} فقط  \n💥" end
 if not MsgText[2] and msg.reply_id then
 GetMsgInfo(msg.chat_id_,msg.reply_id,action_by_reply,{msg=msg,cmd="setmnsha"})
@@ -604,7 +580,7 @@ return false
 end
 
 
-if (MsgText[1] == "تنزيل منشى" or MsgText[1] == "تنزيل منشئ" ) and KaraJoinChannel(msg) then
+if (MsgText[1] == "تنزيل منشى" or MsgText[1] == "تنزيل منشئ" ) then
 if not msg.Kara then return "♦️*│*هذا الامر يخص {المطور,المنشى الاساسي فقط} فقط  \n💥" end
 if not MsgText[2] and msg.reply_id then
 GetMsgInfo(msg.chat_id_,msg.reply_id,action_by_reply,{msg=msg,cmd="remmnsha"})
@@ -1530,7 +1506,7 @@ end
 
 if msg.SudoBase then
 
-if MsgText[1] == "رفع مطور" and KaraJoinChannel(msg) then
+if MsgText[1] == "رفع مطور" then
 if not msg.SudoBase then return "♦️*│*هذا الامر يخص {المطور الاساسي 👨‍💻} فقط  \n💥" end
 if not MsgText[2] and msg.reply_id then 
 GetMsgInfo(msg.chat_id_,msg.reply_id,action_by_reply,{msg=msg,cmd="up_sudo"}) 
@@ -1546,7 +1522,7 @@ return false
 end 
 end
 
-if MsgText[1] == "تنزيل مطور" and KaraJoinChannel(msg) then
+if MsgText[1] == "تنزيل مطور" then
 if not MsgText[2] and msg.reply_id then 
 GetMsgInfo(msg.chat_id_,msg.reply_id,action_by_reply,{msg=msg,cmd="dn_sudo"}) 
 return false
@@ -2456,7 +2432,7 @@ end
 sendMsg(msg.chat_id_,msg.id_,t)
 end
 
-if Text == 'time' or Text == 'الوقت' and KaraJoinChannel(msg) then
+if Text == 'time' or Text == 'الوقت' then
 local colors = {'blue','green','yellow','magenta','Orange','DarkOrange','red'}
 local fonts = {'mathbf','mathit','mathfrak','mathrm'}
 local url1 = 'http://latex.codecogs.com/png.download?'..'\\dpi{600}%20\\huge%20\\'..fonts[math.random(#fonts)]..'{{\\color{'..colors[math.random(#colors)]..'}'..os.date("%H:%M")..'}}'	
@@ -2483,7 +2459,7 @@ end
 tdcli_function ({ID = "GetMessage",chat_id_=msg.chat_id_,message_id_=tonumber(msg.reply_to_message_id_)},tosticker, nil)
 end
 
-if Text == 'tophoto' or Text == 'صوره' and tonumber(msg.reply_to_message_id_) > 0 and KaraJoinChannel(msg) then
+if Text == 'tophoto' or Text == 'صوره' and tonumber(msg.reply_to_message_id_) > 0 then
 function tophoto(kara,max)   
 if max.content_.ID == "MessageSticker" then        
 local bd = max.content_.sticker_.sticker_.path_          
@@ -3808,7 +3784,7 @@ else
 end
 elseif Text:match("^"..Bot_Name.." رزله(.*)$") and msg.SudoUser then
 if msg.reply_id then
-sendMsg(msg.chat_id_,msg.id_,'اوك سيدي 🌝🍃')
+sendMsg(msg.chat_id_,msg.id_,'اوك سيدي ??🍃')
 return sendMsg(msg.chat_id_,msg.reply_id,'تعال هيوو  😒 شو طالعه عينك ولسانك طويل سربوت  اشو تعال بله شنو هاذ ويهك هاذ 😳 كول بلعباس , 😅 لك #دي وتفو بعد لتندك بتاج راسك خوش حمبقلبي  👍🏿') 
 end
 elseif Text:match("^بوس(.*)$") then 
@@ -4000,19 +3976,6 @@ end
 ------------------------------{ End Replay Send }------------------------
 
 ------------------------------{ Start Checking CheckExpire }------------------------
-if not redis:sismember(max..'kara','Start') then
-redis:setex(max..'2DaySleep',172800,'uop90')
-redis:sadd(max..'kara','Start')
-end
-if not redis:get(max..'2DaySleep') and redis:sismember(max..'kara','Start') and not redis:sismember(max..'kara','End') then
-redis:setex(max..'4DaySleep',345600,'mohammad')
-redis:sadd(max..'kara','End')
-sendMsg(SUDO_ID,0,"👨‍💻↫ اهلا عزيزي المطور\n┄─┅═ـ═┅─┄\n╿ الاشتراك الاجباري على قناة السورس\n│مدة الاشتراك 4 ايام فقط\n╽سيتم ازاله الاشتراك تلقائيا")
-end
-if not redis:get(max..'4DaySleep') and not redis:sismember(max..'kara','End2') then
-sendMsg(SUDO_ID,0,"🙋🏻‍♂╿هلآو حبي ❤️ \n🍁╽تم انتهاء 4 ايام الاشتراك الاجباري")
-redis:sadd(max..'kara','End2')
-end
 if not redis:get('kar') then
 redis:setex('kar',86400,true) 
 json_data = '{"BotID": '..max..',"UserBot": "'..Bot_User..'","Groups" : {'
