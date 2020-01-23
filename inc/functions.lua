@@ -9,8 +9,6 @@
 │@auuuvu ‿ @uop70 
 #-------------------------------------------------------------------
 ]]
-tokenJoin = '920283482:23FSK551lLEPvE2HAAIZDeLGmlhWtQX217A'
-botId = tokenJoin:match('(.*):')
 
 function dl_cb(a,d) end
  
@@ -587,7 +585,7 @@ MsgShow = 'مــلــک✔️💯😻'
 elseif NumMsg < 100000 then 
 MsgShow = 'ملكوت التفاعل استمر😻❤️' 
 elseif NumMsg > 150000 then 
-MsgShow = 'ملك التلكرام😻♥' 
+MsgShow = 'ملك التلكرام??♥' 
 end
 return MsgShow 
 end
