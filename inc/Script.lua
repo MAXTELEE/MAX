@@ -138,6 +138,31 @@ end
 
 
 local function imax(msg,MsgText)
+
+Channel = redis:get(max..'setch') or katrenno
+--JoinChannel
+function is_JoinChannel(msg)
+if redis:get(max..'joinchnl') then
+local url  = https.request('https://api.telegram.org/bot'..Token..'/getchatmember?chat_id=@'..Channel..'&user_id='..msg.sender_user_id_)
+if res ~= 200 then
+end
+Joinchanel = json:decode(url)
+if not GeneralBanned((msg.adduser or msg.sender_user_id_)) and (not Joinchanel.ok or Joinchanel.result.status == "left" or Joinchanel.result.status == "kicked") and not msg.SudoUser then
+function name(arg,data)
+bd = '👷🏾‍♂╿اسمك  ('..(data.first_name_ or '')..')\n📡╽معرفك (@'..(data.username_ or '')..')\n\n🚸╽آشـترگ بآلقنآ‌‏هہ آولآ \n🔛╽ثم آرجع آستخدم الامر.'
+local keyboard = {}
+keyboard.inline_keyboard = {{
+{text = 'آشـترگ بآلقنآ‌‏هہ 🙋🏻‍♂',url='https://telegram.me/'..Channel}}}   
+send_inline(msg.chat_id_,bd,keyboard,'html')
+end
+getUser(msg.sender_user_id_,name)
+else
+return true
+end
+else
+return true
+end
+end
 if msg.type ~= 'pv' then
 
 if MsgText[1] == "تفعيل" and not MsgText[2] then
@@ -2424,8 +2449,70 @@ end
 
 local function dmax(msg)
 
+
+
+local getChatId = function(id)
+  local chat = {}
+  local id = tostring(id)
+  if id:match("^-100") then
+    local channel_id = id:gsub("-100", "")
+    chat = {ID = channel_id, type = "channel"}
+  else
+    local group_id = id:gsub("-", "")
+    chat = {ID = group_id, type = "group"}
+  end
+  return chat
+end
+local getChannelFull = function(channel_id, cb)
+  tdcli_function({
+    ID = "GetChannelFull",
+    channel_id_ = getChatId(channel_id).ID
+  }, cb or dl_cb, nil)
+end
+
+local getUser = function(user_id, cb)
+tdcli_function({ID = "GetUser", user_id_ = user_id}, cb, nil)
+end
+local getChat = function(chat_id, cb)
+tdcli_function({ID = "GetChat", chat_id_ = chat_id}, cb or dl_cb, nil)
+end
+
+
+if redis:get(max..'welc'..msg.chat_id_) == 'on' then
+if msg.content_.ID == 'MessageChatJoinByLink' then
+function WelcomeByAddUser(BlaCk,Diamond)
+local function setlinkgp(td,mrr619)
+function gps(arg,data)
+
+txt = '👋┓ اهلآ عزيزي '..(Diamond.first_name_ or '---')..'\n👥┫ المجموعه  '..(data.title_ or '---')..' \n🤫┫ احترام الادمنيه\n😡┫ ممنوع طلب الرتب\n🤐┫ ممنوع السب والكفران \n😒┫ ممنوع التكلم بالطائفيه\n🙏┫ الاعضاء '..mrr619.member_count_..' عضو\n👮‍┫ الادمنيه '..mrr619.administrator_count_..' \n⏱┫ وقت الانضمام :【*'..os.date("%H:%M:%S")..'*】\n📅┛ تاريخ الانضمام :【*'..os.date("%Y/%m/%d")..'*】\n'
+sendMsg(msg.chat_id_,msg.id_,txt)
+end
+getChat(msg.chat_id_,gps)
+end
+getChannelFull(msg.chat_id_,setlinkgp)
+end
+getUser(msg.sender_user_id_,WelcomeByAddUser)
+end
+end
+
+
+
 local Text = msg.text
 if Text then
+
+
+if Text and (Text:match('(.*)')) and tonumber(msg.sender_user_id_) ~= 0 then
+function dl_username(arg,data)
+if data.username_ then
+info = data.username_
+else
+info = data.first_name_
+end
+local hash = max..'user_names:'..msg.sender_user_id_
+redis:set(hash,info)
+end
+getUser(msg.sender_user_id_,dl_username)
+end
 
 ------set cmd------
 Black = msg.text 
@@ -2470,6 +2557,42 @@ t = '⛔| عزيزي لم تقم ب اضافه امر !'
 end
 sendMsg(msg.chat_id_,msg.id_,t)
 end
+
+
+
+
+if Black == 'welcome on' or Black == 'تفعيل الترحيب' then
+if redis:get(max..'welc'..msg.chat_id_) == 'on' then
+sendMsg(msg.chat_id_,msg.id_,'تم تفعيل الترحيب سابقا')
+else
+sendMsg(msg.chat_id_,msg.id_,'تم تفعيل الترحيب')
+redis:set(max..'welc'..msg.chat_id_,'on')
+end
+end
+if Text == 'welcome off' or Text == 'تعطيل الترحيب' then
+if redis:get(max..'welc'..msg.chat_id_) == 'off' then
+sendMsg(msg.chat_id_,msg.id_,'تم تعطيل الترحيب سابقا')
+redis:set(max..'welc'..msg.chat_id_,'off')
+redis:del(max..'welc'..msg.chat_id_,'on')
+else
+sendMsg(msg.chat_id_,msg.id_,'تم تعطيل الترحيب')
+end
+end
+
+if Text == "join on" and msg.SudoUser then
+redis:set(max..'joinchnl',true)
+sendMsg(msg.chat_id_,msg.id_,'on')
+end
+if Text and redis:get(max..'setchs') and msg.SudoUser then
+redis:set(max..'setch',Text)
+sendMsg(msg.chat_id_,msg.id_,'تم تعين القناه علي \n'..Text)
+redis:del(max..'setchs')
+end
+if Text and (Text:match("^setch$")) and msg.SudoUser then
+sendMsg(msg.chat_id_,msg.id_,'ارسل معرفك بدون @')
+redis:setex(max..'setchs',120,true)
+end
+
 
 if Text == 'time' or Text == 'الوقت' and is_JoinChannel(msg) then
 local colors = {'blue','green','yellow','magenta','Orange','DarkOrange','red'}
