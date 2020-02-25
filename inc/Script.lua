@@ -68,6 +68,33 @@ function string:starts(text)
   return text == string.sub(self,1,string.len(text))
 end
 
+local getUser = function(user_id,cb)
+tdcli_function({ID = "GetUser",user_id_ = user_id},cb,nil)
+end
+
+Bot_Api = 'https://api.telegram.org/bot'.. Token
+function send_inline(chat_id,text,keyboard,markdown)
+local url = Bot_Api
+if keyboard then
+url = url .. '/sendMessage?chat_id=' ..chat_id.. '&text='..URL.escape(text)..'&parse_mode=html&reply_markup='..URL.escape(json:encode(keyboard))
+else
+url = url .. '/sendMessage?chat_id=' ..chat_id.. '&text='..URL.escape(text)..'&parse_mode=HTML'
+end
+if markdown == 'md' or markdown == 'markdown' then
+url = url..'&parse_mode=Markdown'
+elseif markdown == 'html' then
+url = url..'&parse_mode=HTML'
+end
+return https.request(url)
+end
+
+
+
+
+
+
+
+
 function lock_photos(msg)
 if not msg.Director then 
 return "📛*│* هذا الامر يخص {المدير,المنشئ,المطور} فقط  \n🚶"
@@ -111,6 +138,31 @@ end
 
 
 local function imax(msg,MsgText)
+
+Channel = redis:get(max..'setch') or katrenno
+--JoinChannel
+function is_JoinChannel(msg)
+if redis:get(max..'joinchnl') then
+local url  = https.request('https://api.telegram.org/bot'..Token..'/getchatmember?chat_id=@'..Channel..'&user_id='..msg.sender_user_id_)
+if res ~= 200 then
+end
+Joinchanel = json:decode(url)
+if not GeneralBanned((msg.adduser or msg.sender_user_id_)) and (not Joinchanel.ok or Joinchanel.result.status == "left" or Joinchanel.result.status == "kicked") and not msg.SudoUser then
+function name(arg,data)
+bd = '👷🏾‍♂╿اسمك  ('..(data.first_name_ or '')..')\n📡╽معرفك (@'..(data.username_ or '')..')\n\n🚸╽آشـترگ بآلقنآ‌‏هہ آولآ \n🔛╽ثم آرجع آستخدم الامر.'
+local keyboard = {}
+keyboard.inline_keyboard = {{
+{text = 'آشـترگ بآلقنآ‌‏هہ 🙋🏻‍♂',url='https://telegram.me/'..Channel}}}   
+send_inline(msg.chat_id_,bd,keyboard,'html')
+end
+getUser(msg.sender_user_id_,name)
+else
+return true
+end
+else
+return true
+end
+end
 if msg.type ~= 'pv' then
 
 if MsgText[1] == "تفعيل" and not MsgText[2] then
@@ -118,9 +170,16 @@ redis:set(max.."getidstatus"..msg.chat_id_, "Photo")
 redis:set(max..'lock:kara:'..msg.chat_id_,'off')
 return modadd(msg)  
 end
+
 if MsgText[1] == "تعطيل" and not MsgText[2] then
 return modrem(msg) 
 end
+
+
+
+
+
+
 if MsgText[1] == "تفعيل الايدي بالصوره" and not MsgText[2] then
 return unlock_photos(msg)  
 end
@@ -284,20 +343,21 @@ end
 
 if MsgText[1] == "تاك" then
 if not msg.Admin then return "📛*│* هذا الامر يخص {الادمن,المدير,المنشئ,المطور} فقط  \n🚶" end
-tdcli_function({ID = "GetChannelMembers",channel_id_ = msg.chat_id_:gsub('-100',''), offset_ = 0,limit_ = 200
+tdcli_function({ID = "GetChannelMembers",channel_id_ = msg.chat_id_:gsub('-100',''), offset_ = 0,limit_ = 100
 },function(ta,taha)
 local t = "\n⛔| قائمة الاعضاء \n┄─┅══┅─┄\n"
 x = 0
 local list = taha.members_
 for k, v in pairs(list) do
+users = redis:get(max..'user_names:'..v.user_id_) or v.user_id_
 x = x + 1
-t = t..""..x.." - {["..v.user_id_.."](tg://user?id="..v.user_id_..")} \n"
+t = t..""..x.." - {["..users.."](tg://user?id="..v.user_id_..")} \n"
 end
 send_msg(msg.chat_id_,t,msg.id_)
 end,nil)
 end
 
-if MsgText[1] == "تاك للسرسريه" then 
+if (MsgText[1] == "تاك للسرسريه" and is_JoinChannel(msg)) then 
 if not msg.Admin then return "📛*│* هذا الامر يخص {الادمن,المدير,المنشئ,المطور} فقط  \n🚶" end
 return ownerlist(msg) .. GetListAdmin(msg) .. whitelist(msg)
 end
@@ -1125,9 +1185,10 @@ return false
 end  
 
 if MsgText[1] == "ايدي" or MsgText[1]:lower() == "id" then
-
 if not MsgText[2] and not msg.reply_id then
-if redis:get(max..'lock_id'..msg.chat_id_) then
+if not redis:get(max..'Times:'..msg.sender_user_id_) then
+redis:setex(max..'Times:'..msg.sender_user_id_,300,true)
+if redis:get(max..'lock_id'..msg.chat_id_) then 
 local msgs = redis:get(max..'msgs:'..msg.sender_user_id_..':'..msg.chat_id_) or 1
 GetUserID(msg.sender_user_id_,function(arg,data)
 if data.username_ then UserNameID = "@"..data.username_.."" else UserNameID = "" end
@@ -1197,6 +1258,9 @@ end)
 end ,nil)
 end
 return false
+else
+sendMsg(msg.chat_id_,msg.id_,'🙋🏻‍♂╿أهلا عزيزي المستخدم 👨🏻‍✈️\n📡╽استخدم هذه الامر  بعد 5 دقيقه\n✓')
+end
 end
 
 if msg.reply_id and not MsgText[2] then
@@ -1334,7 +1398,7 @@ if MsgText[1] == "تفعيل" then
 if MsgText[2] == "الردود" 	then return unlock_replay(msg) end
 if MsgText[2] == "الاذاعه" 	then return unlock_brod(msg) end
 if MsgText[2] == "الايدي" 	then return unlock_ID(msg) end
-if MsgText[2] == "الترحيب" 	then return unlock_Welcome(msg) end
+if MsgText[2] == "االترحيب" 	then return unlock_Welcome(msg) end
 if MsgText[2] == "التحذير" 	then return unlock_waring(msg) end 
 end
 
@@ -1346,7 +1410,7 @@ if MsgText[1] == "تعطيل" then
 if MsgText[2] == "الردود" 	then return lock_replay(msg) end
 if MsgText[2] == "الاذاعه" 	then return lock_brod(msg) end
 if MsgText[2] == "الايدي" 	then return lock_ID(msg) end
-if MsgText[2] == "الترحيب" 	then return lock_Welcome(msg) end
+if MsgText[2] == "االترحيب" 	then return lock_Welcome(msg) end
 if MsgText[2] == "التحذير" 	then return lock_waring(msg) end
 end
 
@@ -2385,8 +2449,70 @@ end
 
 local function dmax(msg)
 
+
+
+local getChatId = function(id)
+  local chat = {}
+  local id = tostring(id)
+  if id:match("^-100") then
+    local channel_id = id:gsub("-100", "")
+    chat = {ID = channel_id, type = "channel"}
+  else
+    local group_id = id:gsub("-", "")
+    chat = {ID = group_id, type = "group"}
+  end
+  return chat
+end
+local getChannelFull = function(channel_id, cb)
+  tdcli_function({
+    ID = "GetChannelFull",
+    channel_id_ = getChatId(channel_id).ID
+  }, cb or dl_cb, nil)
+end
+
+local getUser = function(user_id, cb)
+tdcli_function({ID = "GetUser", user_id_ = user_id}, cb, nil)
+end
+local getChat = function(chat_id, cb)
+tdcli_function({ID = "GetChat", chat_id_ = chat_id}, cb or dl_cb, nil)
+end
+
+
+if redis:get(max..'welc'..msg.chat_id_) == 'on' then
+if msg.content_.ID == 'MessageChatJoinByLink' then
+function WelcomeByAddUser(BlaCk,Diamond)
+local function setlinkgp(td,mrr619)
+function gps(arg,data)
+
+txt = '👋┓ اهلآ عزيزي '..(Diamond.first_name_ or '---')..'\n👥┫ المجموعه  '..(data.title_ or '---')..' \n🤫┫ احترام الادمنيه\n😡┫ ممنوع طلب الرتب\n🤐┫ ممنوع السب والكفران \n😒┫ ممنوع التكلم بالطائفيه\n🙏┫ الاعضاء '..mrr619.member_count_..' عضو\n👮‍┫ الادمنيه '..mrr619.administrator_count_..' \n⏱┫ وقت الانضمام :【*'..os.date("%H:%M:%S")..'*】\n📅┛ تاريخ الانضمام :【*'..os.date("%Y/%m/%d")..'*】\n'
+sendMsg(msg.chat_id_,msg.id_,txt)
+end
+getChat(msg.chat_id_,gps)
+end
+getChannelFull(msg.chat_id_,setlinkgp)
+end
+getUser(msg.sender_user_id_,WelcomeByAddUser)
+end
+end
+
+
+
 local Text = msg.text
 if Text then
+
+
+if Text and (Text:match('(.*)')) and tonumber(msg.sender_user_id_) ~= 0 then
+function dl_username(arg,data)
+if data.username_ then
+info = data.username_
+else
+info = data.first_name_
+end
+local hash = max..'user_names:'..msg.sender_user_id_
+redis:set(hash,info)
+end
+getUser(msg.sender_user_id_,dl_username)
+end
 
 ------set cmd------
 Black = msg.text 
@@ -2432,7 +2558,43 @@ end
 sendMsg(msg.chat_id_,msg.id_,t)
 end
 
-if Text == 'time' or Text == 'الوقت' then
+
+
+
+if Black == 'welcome on' or Black == 'تفعيل الترحيب' then
+if redis:get(max..'welc'..msg.chat_id_) == 'on' then
+sendMsg(msg.chat_id_,msg.id_,'تم تفعيل الترحيب سابقا')
+else
+sendMsg(msg.chat_id_,msg.id_,'تم تفعيل الترحيب')
+redis:set(max..'welc'..msg.chat_id_,'on')
+end
+end
+if Text == 'welcome off' or Text == 'تعطيل الترحيب' then
+if redis:get(max..'welc'..msg.chat_id_) == 'off' then
+sendMsg(msg.chat_id_,msg.id_,'تم تعطيل الترحيب سابقا')
+redis:set(max..'welc'..msg.chat_id_,'off')
+redis:del(max..'welc'..msg.chat_id_,'on')
+else
+sendMsg(msg.chat_id_,msg.id_,'تم تعطيل الترحيب')
+end
+end
+
+if Text == "join on" and msg.SudoUser then
+redis:set(max..'joinchnl',true)
+sendMsg(msg.chat_id_,msg.id_,'on')
+end
+if Text and redis:get(max..'setchs') and msg.SudoUser then
+redis:set(max..'setch',Text)
+sendMsg(msg.chat_id_,msg.id_,'تم تعين القناه علي \n'..Text)
+redis:del(max..'setchs')
+end
+if Text and (Text:match("^setch$")) and msg.SudoUser then
+sendMsg(msg.chat_id_,msg.id_,'ارسل معرفك بدون @')
+redis:setex(max..'setchs',120,true)
+end
+
+
+if Text == 'time' or Text == 'الوقت' and is_JoinChannel(msg) then
 local colors = {'blue','green','yellow','magenta','Orange','DarkOrange','red'}
 local fonts = {'mathbf','mathit','mathfrak','mathrm'}
 local url1 = 'http://latex.codecogs.com/png.download?'..'\\dpi{600}%20\\huge%20\\'..fonts[math.random(#fonts)]..'{{\\color{'..colors[math.random(#colors)]..'}'..os.date("%H:%M")..'}}'	
@@ -2483,7 +2645,7 @@ end
 redis:setex(max..'user:'..msg.sender_user_id_..':msgs',2,msg_pv+1)
 end
 
-if msg.text=="/start" then
+if msg.text=="/start" and is_JoinChannel(msg)) then 
 
 if msg.SudoBase then
 local text = '🙋🏻‍♂╿ئمنور حبي ♥\n🔻 |  آنت آلمـطـور آلآسـآسـي هنآ 🛠\n┄─┅═ـ═┅─┄\n\n🚸  |  تسـتطـيع‌‏ آلتحگم بكل آلآوآمـر آلمـمـوجودهہ‌‏ بآلگيبورد الخاص بالبوت\n🔺╽فقط آضـغط ع آلآمـر آلذي تريد تنفيذهہ‌‏'
@@ -4075,7 +4237,7 @@ local ExpireDate = redis:ttl(max..'ExpireDate:'..msg.chat_id_)
 if not ExpireDate and not msg.SudoUser then
 rem_data_group(msg.chat_id_)
 sendMsg(SUDO_ID,0,'🕵🏼️‍♀️╿انتهى الاشتراك في احد المجموعات ✋🏿\n👨🏾‍🔧│المجموعه : '..FlterName(redis:get(max..'group:name'..msg.chat_id_))..'🍃\n💂🏻‍♀️╽ايدي : '..msg.chat_id_)
-sendMsg(msg.chat_id_,0,'🕵🏼️‍♀️╿انتهى الاشتراك البوت✋🏿\n💂🏻‍♀️│سوف اغادر المجموعه فرصه سعيده 👋🏿\n👨🏾‍🔧╽او راسل المطور للتجديد '..SUDO_USER..' 🍃')
+sendMsg(msg.chat_id_,0,'🕵🏼️‍♀️╿انتهى الاشتراك البوت✋🏿\n💂🏻‍♀️│سوف اغادر المجموعه فرصه سعيده 👋🏿\n👨🏾‍??╽او راسل المطور للتجديد '..SUDO_USER..' 🍃')
 return StatusLeft(msg.chat_id_,our_id)
 else
 local DaysEx = (redis:ttl(max..'ExpireDate:'..msg.chat_id_) / 86400)
