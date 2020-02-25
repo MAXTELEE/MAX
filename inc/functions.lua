@@ -945,27 +945,6 @@ end
 json_data =  json_data..'}'
 end
 
-local pvs = redis:smembers(max..'users')
-if #pvs ~= 0 then
-json_data =  json_data..',"PV" : {'
-for key,value in pairs(pvs) do
-local info = redis:hgetall(max..'username:'..value)
-if info then 
-UserName_ = (info.username or "")
-UserName_ = UserName_:gsub([[\]],'')
-UserName_ = UserName_:gsub('"','')
-end 
-if key == 1 then
-json_data =  json_data..'"'..UserName_..'":'..value
-else
-json_data =  json_data..',"'..UserName_..'":'..value
-end 
-end
-json_data =  json_data..'}'
-end 
-
-
-
 local creator = redis:smembers(max..':KARA_BOT:'..GroupS)
 if #creator ~= 0 then
 json_data =  json_data..',"Kara" : {'
