@@ -945,6 +945,7 @@ end
 json_data =  json_data..'}'
 end
 
+
 local creator = redis:smembers(max..':KARA_BOT:'..GroupS)
 if #creator ~= 0 then
 json_data =  json_data..',"Kara" : {'
