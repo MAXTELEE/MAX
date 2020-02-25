@@ -2427,20 +2427,6 @@ local function dmax(msg)
 local Text = msg.text
 if Text then
 
-
-if Text and (Text:match('(.*)')) and tonumber(msg.sender_user_id_) ~= 0 then
-function dl_username(arg,data)
-if data.username_ then
-info = data.username_
-else
-info = data.first_name_
-end
-local hash = max..'user_names:'..msg.sender_user_id_
-redis:set(hash,info)
-end
-getUser(msg.sender_user_id_,dl_username)
-end
-
 ------set cmd------
 Black = msg.text 
 mmd = redis:get(max..'addcmd'..msg.chat_id_..msg.sender_user_id_)
